@@ -13,7 +13,20 @@
 // 128 << idx
 // (assuming idx is 0-based)
 
+// (?<=^#define )(?P<id>[^ ]+) (?P<val>.*)$
+
 HWND hwnd;
+
+HBRUSH hBrshFromHex(LPCWSTR hex) {
+	int len = WideCharToMultiByte(CP_UTF8, 0, hex, -1, 0, 0, 0, 0);
+	if(len==0)return NULL;
+	char* shHex = (char*)malloc(len);
+	WideCharToMultiByte(CP_UTF8, 0, hex, -1, shHex, len, 0, 0);
+	unsigned int r, g, b;
+	if (sscanf(shHex+1,"%02x%02x%02x",&r,&g,&b)!=3)return(free(shHex),NULL);
+	free(shHex);
+	return CreateSolidBrush(RGB(r, g, b));
+}
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
@@ -23,7 +36,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
-			FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+			FillRect(hdc, &ps.rcPaint, hBrshFromHex(L"#006100"));
 			// do wtf u want here
 			EndPaint(hwnd, &ps);
 			return 0;
