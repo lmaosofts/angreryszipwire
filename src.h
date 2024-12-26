@@ -2,4 +2,5 @@
 #define RESOURCE_H
 #define APP_ICON 101 // app icon id lololololol
 #define HELP_CHM 102
+#define FART 103
 #endif

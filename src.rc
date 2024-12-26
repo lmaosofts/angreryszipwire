@@ -1,3 +1,4 @@
 #include "src.h"
-APP_ICON ICON "icon.ico"
-HELP_CHM RCDATA "help.chm"
+APP_ICON ICON "assets/icon.ico"
+HELP_CHM RCDATA "assets/help.chm"
+FART RCDATA "assets/logoFart.wav"

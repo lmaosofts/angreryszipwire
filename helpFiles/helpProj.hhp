@@ -1,7 +1,7 @@
 [OPTIONS]
 Binary TOC=Yes
 Compatibility=1.1 or later
-Compiled file=..\help.chm
+Compiled file=..\assets\help.chm
 Contents file=toc.hhc
 Default topic=01.html
 Full-text search=Yes

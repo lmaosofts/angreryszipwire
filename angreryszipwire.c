@@ -20,6 +20,18 @@ HWND hwnd;
 WNDCLASS wc = {};
 int fps;
 DWORD lastT;
+double fartLen = 2.763174603174603394251107602030970156192779541015625; // most precisely precise length (tehehehehehehehehehehe)
+
+HGLOBAL loadResrcTo(int intSmth, char* to){
+	HRSRC foundRc = FindResource(0, MAKEINTRESOURCE(intSmth), RT_RCDATA);
+	char tempPath[MAX_PATH];
+	GetTempPathA(MAX_PATH, tempPath);
+	strcat(tempPath, to);
+	FILE *IO = fopen(tempPath, "wb");
+	fwrite(LockResource(LoadResource(0, foundRc)), 1, SizeofResource(0, foundRc), IO);
+	fclose(IO);
+	return LoadResource(0, foundRc);
+}
 
 HBRUSH hBrshFromHex(LPCWSTR hex) {
 	int len = WideCharToMultiByte(CP_UTF8, 0, hex, -1, 0, 0, 0, 0);
@@ -30,6 +42,22 @@ HBRUSH hBrshFromHex(LPCWSTR hex) {
 	if (sscanf(shHex+1,"%02x%02x%02x",&r,&g,&b)!=3)return(free(shHex),NULL);
 	free(shHex);
 	return CreateSolidBrush(RGB(r, g, b));
+}
+
+// credits to boink wer for this code!
+void PlayResourceSound(HINSTANCE hInstance, int resourceID) {
+	HRSRC hResource = FindResource(hInstance, MAKEINTRESOURCE(resourceID), RT_RCDATA);
+	if (hResource) {
+		HGLOBAL hLoadedResource = LoadResource(hInstance, hResource);
+		if (hLoadedResource) {
+			LPVOID pResourceData = LockResource(hLoadedResource);
+			if (pResourceData) {
+				PlaySoundA((LPCSTR)pResourceData, NULL, SND_MEMORY | SND_ASYNC);
+				UnlockResource(hLoadedResource);
+			}
+			FreeResource(hLoadedResource);
+		}
+	}
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -48,10 +76,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			EndPaint(hwnd, &ps);
 			return 0;
 		case WM_TIMER:
-			DWORD now = GetTickCount();
-			fps = (int)floor(1000.0 / (now - lastT));
-			lastT = now;
-			InvalidateRect(hwnd, NULL, 1);
+			switch (wParam) {
+				case 2:
+					KillTimer(hwnd, 2);
+					PlayResourceSound(NULL, FART);
+					break;
+				case 1:
+					DWORD now = GetTickCount();
+					fps = (int)floor(1000.0 / (now - lastT));
+					lastT = now;
+					InvalidateRect(hwnd, NULL, 1);
+					break;
+				default:
+					return DefWindowProc(hwnd, uMsg, wParam, lParam);
+			}
 			return 0;
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -90,6 +128,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	SendMessage(hwnd, WM_SETICON, 0, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(APP_ICON)));
 	lastT = GetTickCount();
 	SetTimer(hwnd, 1, 1000 / 120, 0);
+	SetTimer(hwnd, 2, 1000, 0);
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
